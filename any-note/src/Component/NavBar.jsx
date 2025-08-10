@@ -1,65 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { FaBars } from "react-icons/fa6";
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CgAdd } from "react-icons/cg";
 import './NavBar.css';
 
-
 function NavBar() {
+  const [click, setClick] = useState(false);
+  const [button, setButton] = useState(true);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const toggleMenu = () => {
-        setIsOpen(!isOpen);
-    };
+  const handleClick = () => setClick(!click);
+  const closeMobileMenu = () => setClick(false);
 
-    // When scrolled it hides
-    const [scrollData, setScrollData] = useState({
-        y: 0,
-        lastY: 0
-    })
+  const showButton = () => {
+    if (window.innerWidth <= 960) {
+      setButton(false);
+    } else {
+      setButton(true);
+    }
+  };
 
-    const [isHidden, setIsHidden] = useState(false);
+  useEffect(() => {
+    showButton();
+    window.addEventListener('resize', showButton);
+    return () => window.removeEventListener('resize', showButton);
+  }, []);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrollData(prevState => {
-                const currentY = window.scrollY;
-                const goingDown = currentY > prevState.y;
-                const goingUp = currentY < prevState.y;
-                const scrolledEnough = currentY > 30;
+  return (
+    <>
+      <nav className="navbar">
+        <div className="navbar-container">
+          {/* Home Logo Button */}
+          <Link
+            to="/"
+            className="navbar-logo"
+            onClick={closeMobileMenu}
+          >
+            <div className="logo-media-wrapper">
+              <img
+                src="/notes.jpg"
+                className="navbar-poster"
+                alt="Logo"
+              />
+              <span className="logo-text">AnyNote</span>
+            </div>
+          </Link>
 
-                setIsHidden(goingDown && scrolledEnough);
-                return {
-                    y: currentY,
-                    lastY: prevState.y
-                }
-            })
-        }
+          <div className="menu-icon" onClick={handleClick}>
+            <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
+          </div>
 
-        window.addEventListener('scroll', handleScroll);
-
-        return () => window.removeEventListener('scroll', handleScroll);
-
-    }, [])
-    
-
-    return <>
-        <header className={`header ${isHidden ? 'hideNav' : ''}`}>
-            <nav className="navbar">
-                <ul className={isOpen ? "nav-link active" : "nav-link"}>
-                    <li><Link to="/"> Home</Link></li>
-                    <li><Link to="/notes"> Notes</Link></li>
-                    <li><Link to ="/addNote"><CgAdd /></Link></li>
-                </ul>
-                <div className="hamburger" onClick={toggleMenu}>
-                    <FaBars />
-                </div>
-            </nav>
-
-        </header>
-
+          <ul className={click ? 'nav-menu active' : 'nav-menu'}>
+            <li className="nav-item">
+              <Link to="/" className="nav-links" onClick={closeMobileMenu}>
+                Home
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/cards" className="nav-links" onClick={closeMobileMenu}>
+                Cards
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </nav>
     </>
-
+  );
 }
 
 export default NavBar;
