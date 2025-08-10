@@ -1,35 +1,59 @@
 import React, { useState, useEffect } from "react";
 import "./Notes.css";
 
+const BACKEND_URL = "http://localhost:5000"; 
+
 function Notes() {
   const [cards, setCards] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedCard, setSelectedCard] = useState(null); // <-- new state
+  const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
-    const savedCards = localStorage.getItem("cards");
-    if (savedCards) {
-      setCards(JSON.parse(savedCards));
-    }
+
+    const fetchCards = () => {
+      fetch(`${BACKEND_URL}/cards`)
+        .then((res) => res.json())
+        .then(setCards)
+        .catch((err) => console.error("Failed to fetch cards:", err));
+    };
+
+    fetchCards(); 
+
+    const intervalId = setInterval(fetchCards, 5000); 
+
+    return () => clearInterval(intervalId);
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cards", JSON.stringify(cards));
-  }, [cards]);
 
   const addCard = () => {
     if (!title.trim() || !description.trim()) return;
 
     const newCard = {
-      id: Date.now(),
       title,
       description,
     };
 
-    setCards((prev) => [newCard, ...prev]);
-    setTitle("");
-    setDescription("");
+    fetch(`${BACKEND_URL}/cards`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCard),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to add card");
+        }
+        return res.json();
+      })
+      .then((createdCard) => {
+
+        setCards((prev) => [createdCard, ...prev]);
+        setTitle("");
+        setDescription("");
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Error adding card. Try again.");
+      });
   };
 
   const closeModal = () => setSelectedCard(null);
@@ -67,7 +91,9 @@ function Notes() {
               onClick={() => setSelectedCard(card)}
               tabIndex={0}
               role="button"
-              onKeyDown={(e) => { if (e.key === "Enter") setSelectedCard(card); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") setSelectedCard(card);
+              }}
             >
               <h3>{card.title}</h3>
               <p>{card.description}</p>
@@ -78,11 +104,12 @@ function Notes() {
 
       {selectedCard && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="modal-card"
-            onClick={(e) => e.stopPropagation()} 
-          >
-            <button className="modal-close" onClick={closeModal} aria-label="Close modal">
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close"
+              onClick={closeModal}
+              aria-label="Close modal"
+            >
               &times;
             </button>
             <h2>{selectedCard.title}</h2>
