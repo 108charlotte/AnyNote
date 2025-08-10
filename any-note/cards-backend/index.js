@@ -34,3 +34,14 @@ app.post("/cards", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.post("/delete", (req, res) => {
+  const {id} = req.body;
+  const initialLength = cards.length;
+  cards = cards.filter((card) => card.id !== id);
+  if (cards.length < initialLength) {
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: "Card not found" });
+  }
+});

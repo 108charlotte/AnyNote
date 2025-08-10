@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Notes.css";
+import { BiTrash } from "react-icons/bi";
 
 const BACKEND_URL = "https://anynote-tfdy.onrender.com"; 
 
@@ -56,6 +57,26 @@ function Notes() {
       });
   };
 
+  const deleteCard = () => {
+    if (!selectedCard) return; 
+    fetch(`${BACKEND_URL}/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({id: selectedCard.id}),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to add card");
+        }
+        setCards(prev => prev.filter(card => card.id !== selectedCard.id));
+        setSelectedCard(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Error deleting card. Try again.");
+      });
+  }
+
   const closeModal = () => setSelectedCard(null);
 
   return (
@@ -106,6 +127,11 @@ function Notes() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <button
+              className="modal-delete"
+              onClick={deleteCard}
+              area-label="Delete card"
+            ><BiTrash /></button>
+            <button
               className="modal-close"
               onClick={closeModal}
               aria-label="Close modal"
@@ -114,6 +140,7 @@ function Notes() {
             </button>
             <h2>{selectedCard.title}</h2>
             <p>{selectedCard.description}</p>
+            
           </div>
         </div>
       )}
