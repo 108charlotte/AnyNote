@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Notes.css";
 
-const BACKEND_URL = "http://localhost:5000"; 
+const BACKEND_URL = "https://anynote-tfdy.onrender.com"; 
 
 function Notes() {
   const [cards, setCards] = useState([]);
