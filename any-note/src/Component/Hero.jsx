@@ -6,7 +6,7 @@ function Hero() {
     <div className='hero-container'>
         <div className='hero-content'>
             <h1>ANY-NOTE</h1>
-            <p> Leave an note, make a friend!</p>
+            <p> Leave an note, read a note!</p>
         </div>
     </div>
   )
